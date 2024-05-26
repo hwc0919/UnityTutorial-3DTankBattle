@@ -46,19 +46,6 @@ namespace Complete
         }
 
 
-        private void OnDisable ()
-        {
-            // When the tank is turned off, set it to kinematic so it stops moving.
-            m_Rigidbody.isKinematic = true;
-
-            // Stop all particle system so it "reset" it's position to the actual one instead of thinking we moved when spawning
-            for(int i = 0; i < m_particleSystems.Length; ++i)
-            {
-                m_particleSystems[i].Stop();
-            }
-        }
-
-
         private void Start ()
         {
             // The axes names are based on player number.

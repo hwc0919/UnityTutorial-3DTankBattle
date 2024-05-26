@@ -13,17 +13,48 @@ namespace MyTank
         public AudioClip m_EngineDriving;
         public float m_PitchRange = 0.2f;
 
-        private Rigidbody m_RigidBody;
+        private Rigidbody m_Rigidbody;
         private string m_MovementAxisName;
         private string m_TurnAxisName;
         private float m_MovementInputValue;
         private float m_TurnInputValue;
         private float m_OriginalPitch;
-        private ParticleSystem[] m_particalSystems;
+        private ParticleSystem[] m_particleSystems;
 
         private void Awake()
         {
-            m_RigidBody = GetComponent<Rigidbody>();
+            m_Rigidbody = GetComponent<Rigidbody>();
+        }
+
+        private void OnEnable()
+        {
+            // When the tank is turned on, make sure it's not kinematic.
+            m_Rigidbody.isKinematic = false;
+
+            // Also reset the input values.
+            m_MovementInputValue = 0f;
+            m_TurnInputValue = 0f;
+
+            // We grab all the Particle systems child of that Tank to be able to Stop/Play them on Deactivate/Activate
+            // It is needed because we move the Tank when spawning it, and if the Particle System is playing while we do that
+            // it "think" it move from (0,0,0) to the spawn point, creating a huge trail of smoke
+            m_particleSystems = GetComponentsInChildren<ParticleSystem>();
+            for (int i = 0; i < m_particleSystems.Length; ++i)
+            {
+                m_particleSystems[i].Play();
+            }
+        }
+
+        private void OnDisable()
+        {
+            // When the tank is turned off, set it to kinematic so it stops moving.
+            m_Rigidbody.isKinematic = true;
+
+            // Stop all particle system so it "reset" it's position to the actual one instead of thinking we moved when spawning
+            for (int i = 0; i < m_particleSystems.Length; ++i)
+            {
+                m_particleSystems[i].Stop();
+            }
         }
 
         // Start is called before the first frame update
@@ -80,14 +111,14 @@ namespace MyTank
         private void Move()
         {
             Vector3 movement = transform.forward * m_MovementInputValue * m_Speed * Time.deltaTime;
-            m_RigidBody.MovePosition(m_RigidBody.position + movement);
+            m_Rigidbody.MovePosition(m_Rigidbody.position + movement);
         }
 
         private void Turn()
         {
             float turn = m_TurnInputValue * m_TurnSpeed * Time.deltaTime;
             Quaternion turnRotation = Quaternion.Euler(0f, turn, 0f);
-            m_RigidBody.MoveRotation(m_RigidBody.rotation * turnRotation);
+            m_Rigidbody.MoveRotation(m_Rigidbody.rotation * turnRotation);
         }
     }
 }
