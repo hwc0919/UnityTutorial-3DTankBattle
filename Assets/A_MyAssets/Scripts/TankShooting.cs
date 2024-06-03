@@ -34,6 +34,8 @@ namespace MyTank
         // Update is called once per frame
         private void Update()
         {
+            m_AimSlider.value = m_MinLaunchForce;
+
             // current force excced max force, fire now
             if (m_CurrentLaunchForce >= m_MaxLaunchForce && !m_Fired)
             {
