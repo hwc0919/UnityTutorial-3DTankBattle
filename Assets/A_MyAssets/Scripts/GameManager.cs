@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -33,6 +34,7 @@ namespace MyTank
             {
                 var spawnPoint = m_Tanks[i].m_SpawnPoint;
                 m_Tanks[i].m_TankInstance = Instantiate(m_TankPrefab, spawnPoint.position, spawnPoint.rotation);
+                m_Tanks[i].m_TankInstance.name = "Tank " + (i + 1).ToString();
                 m_Tanks[i].m_PlayerNumber = i + 1;
                 m_Tanks[i].Setup();
             }
