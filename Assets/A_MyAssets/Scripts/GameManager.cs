@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 
@@ -15,6 +16,7 @@ namespace MyTank
 
         public GameObject m_TankPrefab;
         public TankManager[] m_Tanks;
+        public int m_PlayerNum = 2;
 
         private WaitForSeconds m_StartWait;
         private WaitForSeconds m_EndWait;
@@ -30,20 +32,22 @@ namespace MyTank
 
         void SpawnAllTanks()
         {
-            for (int i = 0; i < m_Tanks.Length; ++i)
+            m_PlayerNum = Math.Min(m_PlayerNum, m_Tanks.Length);
+            for (int i = 0; i < m_PlayerNum; ++i)
             {
-                var spawnPoint = m_Tanks[i].m_SpawnPoint;
-                m_Tanks[i].m_TankInstance = Instantiate(m_TankPrefab, spawnPoint.position, spawnPoint.rotation);
-                m_Tanks[i].m_TankInstance.name = "Tank " + (i + 1).ToString();
-                m_Tanks[i].m_PlayerNumber = i + 1;
-                m_Tanks[i].Setup();
+                var tank = m_Tanks[i];
+                var spawnPoint = tank.m_SpawnPoint;
+                tank.m_TankInstance = Instantiate(m_TankPrefab, spawnPoint.position, spawnPoint.rotation);
+                tank.m_TankInstance.name = "Tank " + (i + 1).ToString();
+                tank.m_PlayerNumber = i + 1;
+                tank.Setup();
             }
         }
 
         void SetCameraTargets()
         {
-            Transform[] targets = new Transform[m_Tanks.Length];
-            for (int i = 0; i < targets.Length; ++i)
+            Transform[] targets = new Transform[m_PlayerNum];
+            for (int i = 0; i < m_PlayerNum; ++i)
             {
                 targets[i] = m_Tanks[i].m_TankInstance.transform;
             }
