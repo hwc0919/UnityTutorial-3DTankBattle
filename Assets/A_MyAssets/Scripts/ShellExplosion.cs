@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace MyTank
@@ -24,13 +25,13 @@ namespace MyTank
             {
                 Rigidbody targetRb = colliders[i].GetComponent<Rigidbody>();
                 if (!targetRb)
-                {
                     continue;
-                }
-
                 targetRb.AddExplosionForce(m_ExplosionForce, transform.position, m_ExplosionRadius);
 
-                // TODO: health
+                TankHealth tankHealth = targetRb.GetComponent<TankHealth>();
+                if (!tankHealth)
+                    continue;
+                tankHealth.TakeDamage(CalculateDamage(targetRb.position));
             }
 
             m_ExplosionParticles.transform.parent = null;
@@ -41,5 +42,14 @@ namespace MyTank
             Destroy(gameObject);
         }
 
+        private float CalculateDamage(Vector3 targetPosition)
+        {
+            Vector3 diff = targetPosition - transform.position;
+            if (diff.magnitude >= m_ExplosionRadius)
+            {
+                return 0;
+            }
+            return m_MaxDamage * (m_ExplosionRadius - diff.magnitude) / m_ExplosionRadius;
+        }
     }
 }
