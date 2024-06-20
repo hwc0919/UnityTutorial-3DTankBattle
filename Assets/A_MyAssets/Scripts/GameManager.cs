@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 
 namespace MyTank
@@ -28,6 +29,8 @@ namespace MyTank
 
             SpawnAllTanks();
             SetCameraTargets();
+
+            StartCoroutine(GameLoop());
         }
 
         void SpawnAllTanks()
@@ -53,6 +56,47 @@ namespace MyTank
             }
 
             m_CameraControl.m_Targets = targets;
+        }
+
+        IEnumerator GameLoop()
+        {
+            Debug.Log("Starting");
+            yield return StartCoroutine(RoundStarting());
+            Debug.Log("Playing");
+            yield return StartCoroutine(RoundPlaying());
+            Debug.Log("Ending");
+            yield return StartCoroutine(RoundEnding());
+
+            SceneManager.LoadScene(0);
+        }
+
+        private IEnumerator RoundStarting()
+        {
+            yield return new WaitForSeconds(2);
+        }
+
+        IEnumerator RoundPlaying()
+        {
+            while (!OneTankLeft())
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+        }
+
+        IEnumerator RoundEnding()
+        {
+            yield return new WaitForSeconds(1);
+        }
+
+        bool OneTankLeft()
+        {
+            int numTanks = 0;
+            for (var i = 0; i < m_PlayerNum; ++i)
+            {
+                if (m_Tanks[i].m_TankInstance.activeSelf)
+                    ++numTanks;
+            }
+            return numTanks <= 1;
         }
     }
 }
