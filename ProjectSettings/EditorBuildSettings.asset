@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/A_MyAssets/Scenes/3DTankBattle.unity
+    guid: bcd0c4987edae444284f8e51f8862894
+  - enabled: 1
     path: Assets/_Complete-Game.unity
     guid: 37961ba4d27bd46428d20c2ffe403dc3
   m_configObjects: {}

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 
@@ -14,13 +15,16 @@ namespace MyTank
         public float m_EndDelay = 3f;
 
         public CameraControl m_CameraControl;
-
+        public Text m_MessageText;
         public GameObject m_TankPrefab;
         public TankManager[] m_Tanks;
         public int m_PlayerNum = 2;
 
         private WaitForSeconds m_StartWait;
         private WaitForSeconds m_EndWait;
+
+        private int m_RoundNumber = 0;
+        private TankManager m_RoundWinner;
 
         void Start()
         {
@@ -67,16 +71,27 @@ namespace MyTank
             Debug.Log("Ending");
             yield return StartCoroutine(RoundEnding());
 
-            SceneManager.LoadScene(0);
+            StartCoroutine(GameLoop());
         }
 
         private IEnumerator RoundStarting()
         {
-            yield return new WaitForSeconds(2);
+            ResetAllTanks();
+            DisableTankControl();
+
+            m_CameraControl.SetStartPositionAndSize();
+
+            ++m_RoundNumber;
+            m_MessageText.text = "ROUND " + m_RoundNumber;
+
+            yield return m_StartWait;
         }
 
         IEnumerator RoundPlaying()
         {
+            EnableTankControl();
+            m_MessageText.text = string.Empty;
+
             while (!OneTankLeft())
             {
                 yield return new WaitForSeconds(0.1f);
@@ -85,7 +100,17 @@ namespace MyTank
 
         IEnumerator RoundEnding()
         {
-            yield return new WaitForSeconds(1);
+            DisableTankControl();
+            m_RoundWinner = null;
+            m_RoundWinner = GetRoundWinner();
+            if (m_RoundWinner != null)
+            {
+                m_RoundWinner.m_Wins++;
+            }
+
+            m_MessageText.text = GetEndMessage();
+
+            yield return m_EndWait;
         }
 
         bool OneTankLeft()
@@ -97,6 +122,65 @@ namespace MyTank
                     ++numTanks;
             }
             return numTanks <= 1;
+        }
+
+        private TankManager GetRoundWinner()
+        {
+            for (int i = 0; i < m_PlayerNum; ++i)
+            {
+                if (m_Tanks[i].m_TankInstance.activeSelf)
+                {
+                    return m_Tanks[i];
+                }
+            }
+            return null;
+        }
+        private string GetEndMessage()
+        {
+            // By default when a round ends there are no winners so the default end message is a draw.
+            string message = "DRAW!";
+
+            // If there is a winner then change the message to reflect that.
+            if (m_RoundWinner != null)
+                message = m_RoundWinner.m_ColoredPlayerText + " WINS THE ROUND!";
+
+            // Add some line breaks after the initial message.
+            message += "\n\n\n\n";
+
+            // Go through all the tanks and add each of their scores to the message.
+            for (int i = 0; i < m_PlayerNum; i++)
+            {
+                message += m_Tanks[i].m_ColoredPlayerText + ": " + m_Tanks[i].m_Wins + " WINS\n";
+            }
+
+            // If there is a game winner, change the entire message to reflect that.
+            //if (m_GameWinner != null)
+            //    message = m_GameWinner.m_ColoredPlayerText + " WINS THE GAME!";
+
+            return message;
+        }
+
+        private void ResetAllTanks()
+        {
+            for (int i = 0; i < m_PlayerNum; ++i)
+            {
+                m_Tanks[i].Reset();
+            }
+        }
+
+        private void EnableTankControl()
+        {
+            for (int i = 0; i < m_PlayerNum; ++i)
+            {
+                m_Tanks[i].EnableControl();
+            }
+        }
+        private void DisableTankControl()
+        {
+            for (int i = 0; i < m_PlayerNum; ++i)
+            {
+                m_Tanks[i].DisableControl();
+            }
         }
     }
 }
